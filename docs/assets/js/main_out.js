@@ -5,7 +5,7 @@
 
     wHandle.setserver = function(arg) {
         if (arg != CONNECTION_URL) {
-            CONNECTION_URL = arg;
+            //CONNECTION_URL = arg;
             showConnecting();
         }
     };
@@ -1119,7 +1119,7 @@
     var T = {
         ZW: "EU-London"
     };
-    wHandle.connect = wsConnect;
+    wHandle.connect = peerServerConnect;
 
     /*var data = {
         "action": "test"
