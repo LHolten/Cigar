@@ -345,9 +345,9 @@
         delay = 500;
         wjQuery("#connecting").hide();
 
-        var masterConnection = peer.connect(MASTER, {metadata = 'need_peer'});
+        var masterConnection = peer.connect(MASTER, {metadata:'needPeer'});
         masterConnection.on('data', function(id) {
-            var dataConnection = peer.connect(id, {metadata = {protocol:1}}});
+            var dataConnection = peer.connect(id, {metadata:{protocol:1}});
             handleDataConnection(dataConnection);
         });
 
@@ -360,18 +360,18 @@
     }
 
     function onPeerOpen(dataConnection) {
-        connections[dataConnection.id] = dataConnection;
-        log.info("Connected to " .. dataConnection.id);
+        connections[dataConnection.peer] = dataConnection;
+        log.info("Connected to " + dataConnection.peer);
         sendNickName(dataConnection);
     }
 
     function onPeerData(dataConnection, data) {
-        handlePeerData(dataConnection.id, data);
+        handlePeerData(dataConnection.peer, data);
     }
 
     function onPeerClose(dataConnection) {
-        connections[dataConnection.id] = nill;
-        log.info("Disconnected from " .. dataConnection.id);
+        connections[dataConnection.peer] = nill;
+        log.info("Disconnected from " + dataConnection.peer);
     }
 
     function onPeerConnection(dataConnection) {
