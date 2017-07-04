@@ -34,11 +34,11 @@
             mouseCoordinateChange()
         };
 
-        if (touchable) {
+        /*if (touchable) {
             mainCanvas.addEventListener('touchstart', onTouchStart, false);
             mainCanvas.addEventListener('touchmove', onTouchMove, false);
             mainCanvas.addEventListener('touchend', onTouchEnd, false);
-        }
+        }*/
 
         mainCanvas.onmouseup = function() {};
         if (/firefox/i.test(navigator.userAgent)) {
@@ -181,7 +181,7 @@
         wjQuery("#overlays").show();
     }
 
-    function onTouchStart(e) {
+    /*function onTouchStart(e) {
         for (var i = 0; i < e.changedTouches.length; i++) {
             var touch = e.changedTouches[i];
             if ((leftTouchID < 0) && (touch.clientX < canvasWidth / 2)) {
@@ -232,7 +232,7 @@
                 break;
             }
         }
-    }
+    }*/
 
     function handleWheel(event) {
         zoom *= Math.pow(.9, event.wheelDelta / -120 || event.detail || 0);
