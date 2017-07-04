@@ -177,7 +177,7 @@
         } else {
             setInterval(drawGameScene, 1E3 / 60);
         }
-        setInterval(sendMouseMove, 40);
+        setInterval(sendMousePosition, 40);
 
         null == peer && showConnecting();
         wjQuery("#overlays").show();
