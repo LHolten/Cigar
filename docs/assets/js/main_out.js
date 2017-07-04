@@ -302,18 +302,14 @@
         }
     }
 
-    function wsConnect(wsUrl) {
-        if (ws) {
-            ws.onopen = null;
-            ws.onmessage = null;
-            ws.onclose = null;
+    function peerConnect(peerUrl) {
+        if (peer) {
             try {
-                ws.close()
+                peer.close()
             } catch (b) {}
-            ws = null
+            peer = null
         }
-        var c = CONNECTION_URL;
-        wsUrl = (useHttps ? "wss://" : "ws://") + c;
+        peerUrl = (useHttps ? "wss://" : "ws://") + CONNECTION_URL;
         nodesOnScreen = [];
         playerCells = [];
         nodes = {};
@@ -322,12 +318,15 @@
         leaderBoard = [];
         mainCanvas = teamScores = null;
         userScore = 0;
-        log.info("Connecting to " + wsUrl + "..");
-        ws = new WebSocket(wsUrl);
-        ws.binaryType = "arraybuffer";
-        ws.onopen = onWsOpen;
-        ws.onmessage = onWsMessage;
-        ws.onclose = onWsClose;
+        log.info("Connecting to " + peerUrl + "..");
+        peer = new Peer({key: 'lwjd5qra8257b9'}); //has to use peerUrl in the future
+        //ws.binaryType = "arraybuffer";
+        peer.on('open', onPeerOpen);
+        //ws.onopen = onWsOpen;
+        peer.on('data', onPeerData);
+        //ws.onmessage = onWsMessage;
+        peer.on('close', onPeerClose);
+        //ws.onclose = onWsClose;
     }
 
     function prepareData(a) {
@@ -980,6 +979,7 @@
         localProtocolHttps = "https:" == localProtocol;
     var nCanvas, ctx, mainCanvas, lbCanvas, chatCanvas, canvasWidth, canvasHeight, qTree = null,
         ws = null,
+        peer = null,
         nodeX = 0,
         nodeY = 0,
         nodesOnScreen = [],
