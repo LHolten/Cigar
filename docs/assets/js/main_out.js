@@ -179,7 +179,7 @@
         }
         setInterval(sendMouseMove, 40);
 
-        null == ws && showConnecting();
+        null == peer && showConnecting();
         wjQuery("#overlays").show();
     }
 
