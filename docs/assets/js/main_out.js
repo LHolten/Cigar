@@ -1,5 +1,6 @@
 (function(wHandle, wjQuery) {
-    var CONNECTION_URL = "127.0.0.1:443", // Default Connection
+    var CONNECTION_KEY = "lwjd5qra8257b9", // Default Connection
+        MASTER = "MASTER",
         SKIN_URL = "./skins/"; // Skin Directory
 
     wHandle.setserver = function(arg) {
@@ -296,21 +297,33 @@
         wjQuery("#overlays").fadeIn(arg ? 200 : 3E3);
     }
 
+    function handleDataConnection(dataConnection) {
+        dataConnection.on('open', function() {
+            onPeerOpen(dataConnection);
+        });
+        dataConnection.on('data', function(data) {
+            onPeerData(dataConnection, data);
+        });
+        dataConnection.on('close', function(data) {
+            onPeerClose(dataConnection);
+        });
+    }
+
     function showConnecting() {
         if (ma) {
             wjQuery("#connecting").show();
-            peerConnect((useHttps ? "wss://" : "ws://") + CONNECTION_URL)
+            peerServerConnect(CONNECTION_KEY)
         }
     }
 
-    function peerConnect(peerUrl) {
+    function peerServerConnect(peerKey) {
         if (peer) {
             try {
                 peer.destroy()
             } catch (b) {}
             peer = null
         }
-        peerUrl = (useHttps ? "wss://" : "ws://") + CONNECTION_URL;
+        peerKey = peerKey || CONNECTION_KEY;
         nodesOnScreen = [];
         playerCells = [];
         nodes = {};
@@ -319,62 +332,70 @@
         leaderBoard = [];
         mainCanvas = teamScores = null;
         userScore = 0;
-        log.info("Connecting to " + peerUrl + "..");
-        peer = new Peer({key: 'lwjd5qra8257b9'}); //has to use peerUrl in the future
-        peer.on('open', onPeerOpen);
-        peer.on('close', onPeerClose);
+        log.info("Connecting to " + peerKey + "..");
+
+        peer = new Peer({key: peerKey});
+        peer.on('open', onPeerServerOpen);
+        peer.on('close', onPeerServerClose);
+
         peer.on('connection', onPeerConnection);
     }
 
-    /*function prepareData(a) {
-        return new DataView(new ArrayBuffer(a))
-    }*/
-
-    /*function wsSend(a) {
-        ws.send(a.buffer)
-    }*/
-
-    function onPeerOpen(id) {
-        peerId = id
+    function onPeerServerOpen(id) {
         delay = 500;
         wjQuery("#connecting").hide();
-        /*msg = prepareData(5);
-        msg.setUint8(0, 254);
-        msg.setUint32(1, 5, true); // Protocol 5
-        wsSend(msg);*/
-        /*msg = prepareData(5);
-        msg.setUint8(0, 255);
-        msg.setUint32(1, 0, true);
-        wsSend(msg);*/
-        sendNickName();
-        log.info("Connection successful!")
+
+        var masterConnection = peer.connect(MASTER, {metadata = 'need_peer'});
+        masterConnection.on('data', function(id) {
+            var dataConnection = peer.connect(id, {metadata = {protocol:1}}});
+            handleDataConnection(dataConnection);
+        });
+
+        log.info("Connection successful!");
     }
 
-    function onPeerClose() {
+    function onPeerServerClose() {
         setTimeout(showConnecting, delay);
         delay *= 1.5;
     }
 
-    function onPeerData(data) {
-        handlePeerData(data)
-        //handleWsMessage(new DataView(msg.data));
+    function onPeerOpen(dataConnection) {
+        connections[dataConnection.id] = dataConnection;
+        log.info("Connected to " .. dataConnection.id);
+        sendNickName(dataConnection);
     }
 
-    function onPeerConnection(DataConnection) {
-        return
+    function onPeerData(dataConnection, data) {
+        handlePeerData(dataConnection.id, data);
     }
 
-    function handlePeerData(data) {
-        /*function getString() {
-            var text = '',
-                char;
-            while ((char = msg.getUint16(offset, true)) != 0) {
-                offset += 2;
-                text += String.fromCharCode(char);
-            }
-            offset += 2;
-            return text;
-        }*/
+    function onPeerClose(dataConnection) {
+        connections[dataConnection.id] = nill;
+        log.info("Disconnected from " .. dataConnection.id);
+    }
+
+    function onPeerConnection(dataConnection) {
+        handleDataConnection(dataConnection);
+    }
+
+    function handlePeerData(id, object) {
+        switch (object.type) {
+            case 'NickName':
+                nickNames[id] = object.name;
+                break;
+            case 'MousePosition':
+                mousePositions[id] = object.position;
+                break;
+            case 'Chat':
+                chats[id] = object.text;
+                addChat(object.text);
+                break;
+            case 'Peer':
+                var dataConnection = peer.connect(object.id);
+                handleDataConnection(dataConnection);
+                break;
+        }
+
 
         /*var offset = 0,
             setCustomLB = false;
@@ -480,7 +501,7 @@
         }
 
         var flags = view.getUint8(offset++);
-        
+
         if (flags & 0x80) {
             // SERVER Message
         }
@@ -546,8 +567,7 @@
         }
     }
 
-
-    function updateNodes(view, offset) {
+    /*function updateNodes(view, offset) {
         timestamp = +new Date;
         var code = Math.random();
         ua = false;
@@ -653,60 +673,33 @@
             null != node && node.destroy();
         }
         ua && 0 == playerCells.length && showOverlays(false)
-    }
+    }*/
 
-    function sendMouseMove() {
-        var msg;
-        if (wsIsOpen()) {
-            msg = rawMouseX - canvasWidth / 2;
-            var b = rawMouseY - canvasHeight / 2;
-            if (64 <= msg * msg + b * b && !(.01 > Math.abs(oldX - X) && .01 > Math.abs(oldY - Y))) {
-                oldX = X;
-                oldY = Y;
-                msg = prepareData(21);
-                msg.setUint8(0, 16);
-                msg.setFloat64(1, X, true);
-                msg.setFloat64(9, Y, true);
-                msg.setUint32(17, 0, true);
-                wsSend(msg);
-            }
+    function sendMousePosition(dataConnection) {
+        if (peerDataConnectionIsOpen(dataConnection)) {
+            var data = {type:'MouseMove', position:{x:(rawMouseX - canvasWidth / 2), y:(rawMouseY - canvasHeight / 2)}};
+            oldX = X;//?
+            oldY = Y;//?
+            dataConnection.send(data);
         }
     }
 
-    function sendNickName() {
-        if (wsIsOpen() && null != userNickName) {
-            var msg = prepareData(1 + 2 * userNickName.length);
-            msg.setUint8(0, 0);
-            for (var i = 0; i < userNickName.length; ++i) msg.setUint16(1 + 2 * i, userNickName.charCodeAt(i), true);
-            wsSend(msg)
+    function sendNickName(dataConnection) {
+        if (peerDataConnectionIsOpen(dataConnection) && null != userNickName) {
+            var data = {type:'NickName', name:userNickName};
+            dataConnection.send(data);
         }
     }
 
-    function sendChat(str) {
-        if (wsIsOpen() && (str.length < 200) && (str.length > 0) && !hideChat) {
-            var msg = prepareData(2 + 2 * str.length);
-            var offset = 0;
-            msg.setUint8(offset++, 99);
-            msg.setUint8(offset++, 0); // flags (0 for now)
-            for (var i = 0; i < str.length; ++i) {
-                msg.setUint16(offset, str.charCodeAt(i), true);
-                offset += 2;
-            }
-
-            wsSend(msg);
+    function sendChat(dataConnection, str) {
+        if (peerDataConnectionIsOpen(dataConnection) && (str.length < 200) && (str.length > 0) && !hideChat) {
+            var data = {type:'Chat', text:str};
+            dataConnection.send(data);
         }
     }
 
-    function peerDataConnectionIsOpen(DataConnection) {
-        return null != DataConnection && DataConnection.open
-    }
-
-    function sendUint8(a) {
-        if (wsIsOpen()) {
-            var msg = prepareData(1);
-            msg.setUint8(0, a);
-            wsSend(msg)
-        }
+    function peerDataConnectionIsOpen(dataConnection) {
+        return null != dataConnection && dataConnection.open
     }
 
     function redrawGameScene() {
@@ -981,9 +974,12 @@
     var localProtocol = wHandle.location.protocol,
         localProtocolHttps = "https:" == localProtocol;
     var nCanvas, ctx, mainCanvas, lbCanvas, chatCanvas, canvasWidth, canvasHeight, qTree = null,
-        //ws = null,
         peer = null,
         peerId = null,
+        connections = {},
+        nickNames = {},
+        mousePositions = {},
+        chats = {},
         nodeX = 0,
         nodeY = 0,
         nodesOnScreen = [],
@@ -1033,12 +1029,12 @@
         splitIcon = new Image,
         ejectIcon = new Image,
         noRanking = false;
-    splitIcon.src = "assets/img/split.png";
-    ejectIcon.src = "assets/img/feed.png";
-    var wCanvas = document.createElement("canvas");
-    var playerStat = null;
-    wHandle.isSpectating = false;
-    wHandle.setNick = function(arg) {
+        splitIcon.src = "assets/img/split.png";
+        ejectIcon.src = "assets/img/feed.png";
+        var wCanvas = document.createElement("canvas");
+        var playerStat = null;
+        wHandle.isSpectating = false;
+        wHandle.setNick = function(arg) {
         hideOverlays();
         userNickName = arg;
         sendNickName();
@@ -1402,7 +1398,7 @@
                     ctx.globalAlpha *= .1;
                     ctx.stroke();
                 }
-                ctx.globalAlpha = 1; 
+                ctx.globalAlpha = 1;
                 c = -1 != playerCells.indexOf(this);
                 var ncache;
                 //draw name
