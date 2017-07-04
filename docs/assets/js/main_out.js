@@ -9,14 +9,14 @@
         }
     };
 
-    var touchX, touchY,
+    /*var touchX, touchY,
         touchable = 'createTouch' in document,
-        touches = [];
+        touches = [];*/
 
-    var leftTouchID = -1,
+    /*var leftTouchID = -1,
         leftTouchPos = new Vector2(0, 0),
         leftTouchStartPos = new Vector2(0, 0),
-        leftVector = new Vector2(0, 0);
+        leftVector = new Vector2(0, 0);*/
 
     var useHttps = "https:" == wHandle.location.protocol;
 
@@ -41,6 +41,7 @@
         }*/
 
         mainCanvas.onmouseup = function() {};
+
         if (/firefox/i.test(navigator.userAgent)) {
             document.addEventListener("DOMMouseScroll", handleWheel, false);
         } else {
@@ -298,14 +299,14 @@
     function showConnecting() {
         if (ma) {
             wjQuery("#connecting").show();
-            wsConnect((useHttps ? "wss://" : "ws://") + CONNECTION_URL)
+            peerConnect((useHttps ? "wss://" : "ws://") + CONNECTION_URL)
         }
     }
 
     function peerConnect(peerUrl) {
         if (peer) {
             try {
-                peer.close()
+                peer.destroy()
             } catch (b) {}
             peer = null
         }
@@ -320,50 +321,51 @@
         userScore = 0;
         log.info("Connecting to " + peerUrl + "..");
         peer = new Peer({key: 'lwjd5qra8257b9'}); //has to use peerUrl in the future
-        //ws.binaryType = "arraybuffer";
         peer.on('open', onPeerOpen);
-        //ws.onopen = onWsOpen;
-        peer.on('data', onPeerData);
-        //ws.onmessage = onWsMessage;
         peer.on('close', onPeerClose);
-        //ws.onclose = onWsClose;
+        peer.on('connection', onPeerConnection);
     }
 
-    function prepareData(a) {
+    /*function prepareData(a) {
         return new DataView(new ArrayBuffer(a))
-    }
+    }*/
 
-    function wsSend(a) {
+    /*function wsSend(a) {
         ws.send(a.buffer)
-    }
+    }*/
 
-    function onWsOpen() {
-        var msg;
+    function onPeerOpen(id) {
+        peerId = id
         delay = 500;
         wjQuery("#connecting").hide();
-        msg = prepareData(5);
+        /*msg = prepareData(5);
         msg.setUint8(0, 254);
         msg.setUint32(1, 5, true); // Protocol 5
-        wsSend(msg);
-        msg = prepareData(5);
+        wsSend(msg);*/
+        /*msg = prepareData(5);
         msg.setUint8(0, 255);
         msg.setUint32(1, 0, true);
-        wsSend(msg);
+        wsSend(msg);*/
         sendNickName();
         log.info("Connection successful!")
     }
 
-    function onWsClose() {
+    function onPeerClose() {
         setTimeout(showConnecting, delay);
         delay *= 1.5;
     }
 
-    function onWsMessage(msg) {
-        handleWsMessage(new DataView(msg.data));
+    function onPeerData(data) {
+        handlePeerData(data)
+        //handleWsMessage(new DataView(msg.data));
     }
 
-    function handleWsMessage(msg) {
-        function getString() {
+    function onPeerConnection(DataConnection) {
+        return
+    }
+
+    function handlePeerData(data) {
+        /*function getString() {
             var text = '',
                 char;
             while ((char = msg.getUint16(offset, true)) != 0) {
@@ -372,9 +374,9 @@
             }
             offset += 2;
             return text;
-        }
+        }*/
 
-        var offset = 0,
+        /*var offset = 0,
             setCustomLB = false;
         240 == msg.getUint8(offset) && (offset += 5);
         switch (msg.getUint8(offset++)) {
@@ -461,7 +463,8 @@
             case 99:
                 addChat(msg, offset);
                 break;
-        }
+        }*/
+
     }
 
     function addChat(view, offset) {
@@ -694,8 +697,8 @@
         }
     }
 
-    function wsIsOpen() {
-        return null != ws && ws.readyState == ws.OPEN
+    function peerDataConnectionIsOpen(DataConnection) {
+        return null != DataConnection && DataConnection.open
     }
 
     function sendUint8(a) {
@@ -978,8 +981,9 @@
     var localProtocol = wHandle.location.protocol,
         localProtocolHttps = "https:" == localProtocol;
     var nCanvas, ctx, mainCanvas, lbCanvas, chatCanvas, canvasWidth, canvasHeight, qTree = null,
-        ws = null,
+        //ws = null,
         peer = null,
+        peerId = null,
         nodeX = 0,
         nodeY = 0,
         nodesOnScreen = [],
