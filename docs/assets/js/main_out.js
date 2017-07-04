@@ -10,9 +10,9 @@
         }
     };
 
-    /*var touchX, touchY,
+    var touchX, touchY,
         touchable = 'createTouch' in document,
-        touches = [];*/
+        touches = [];
 
     /*var leftTouchID = -1,
         leftTouchPos = new Vector2(0, 0),
