@@ -1121,7 +1121,7 @@
     };
     wHandle.connect = wsConnect;
 
-    var data = {
+    /*var data = {
         "action": "test"
     };
     wjQuery.ajax({
@@ -1137,7 +1137,7 @@
                 }
             }
         }
-    });
+    });*/
 
     var delay = 500,
         Canvas = null,
