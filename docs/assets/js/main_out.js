@@ -87,48 +87,48 @@
                     break;
                 case 32: // space
                     if ((!spacePressed) && (!isTyping)) {
-                        sendMouseMove();
-                        sendUint8(17);
+                        sendMousePosition();
+                        sendKey('SpacePressed');
                         spacePressed = true;
                     }
                     break;
                 case 87: // W
                     if ((!wPressed) && (!isTyping)) {
-                        sendMouseMove();
-                        sendUint8(21);
+                        sendMousePosition();
+                        sendKey('WPressed');
                         wPressed = true;
                     }
                     break;
                 case 81: // Q
                     if ((!qPressed) && (!isTyping)) {
-                        sendUint8(18);
+                        sendKey('QPressed');
                         qPressed = true;
                     }
                     break;
                 case 69: // E
                     if (!ePressed && (!isTyping)) {
-                        sendMouseMove();
-                        sendUint8(22);
+                        sendMousePosition();
+                        sendKey('EPressed');
                     }
                     break;
                 case 82: // R
                     if (!rPressed && (!isTyping)) {
-                        sendMouseMove();
-                        sendUint8(23);
+                        sendMousePosition();
+                        sendKey('RPressed');
                         if (!rMacro) rPressed = true;
                     }
                     break;
                 case 84: // T
                     if (!tPressed && (!isTyping)) {
-                        sendMouseMove();
-                        sendUint8(24);
+                        sendMousePosition();
+                        sendKey('TPressed');
                         tPressed = true;
                     }
                     break;
                 case 80: // P
                     if (!pPressed && (!isTyping)) {
-                        sendMouseMove();
-                        sendUint8(25);
+                        sendMousePosition();
+                        sendKey('PPressed');
                         pPressed = true;
                     }
                     break;
@@ -147,7 +147,7 @@
                     break;
                 case 81: // Q
                     if (qPressed) {
-                        sendUint8(19);
+                        sendKey('QReleased');
                         qPressed = false;
                     }
                     break;
@@ -166,7 +166,7 @@
             }
         };
         wHandle.onblur = function() {
-            sendUint8(19);
+            sendKey('ReleaseAll');
             wPressed = spacePressed = qPressed = ePressed = rPressed = tPressed = pPressed = false
         };
 
@@ -387,7 +387,6 @@
                 mousePositions[id] = object.position;
                 break;
             case 'Chat':
-                chats[id] = object.text;
                 addChat(object.text);
                 break;
             case 'Peer':
@@ -675,12 +674,13 @@
         ua && 0 == playerCells.length && showOverlays(false)
     }*/
 
-    function sendMousePosition(dataConnection) {
-        if (peerDataConnectionIsOpen(dataConnection)) {
-            var data = {type:'MouseMove', position:{x:(rawMouseX - canvasWidth / 2), y:(rawMouseY - canvasHeight / 2)}};
-            oldX = X;//?
-            oldY = Y;//?
-            dataConnection.send(data);
+    function sendMousePosition() {
+        for (id in connections) {
+            var dataConnection = connections[id];
+            if (peerDataConnectionIsOpen(dataConnection)) {
+                var data = {type:'MouseMove', position:{x:X, y:Y}};
+                dataConnection.send(data);
+            }
         }
     }
 
@@ -691,7 +691,17 @@
         }
     }
 
-    function sendChat(dataConnection, str) {
+    function sendKey(key) {
+        for (id in connections) {
+            var dataConnection = connections[id];
+            if (peerDataConnectionIsOpen(dataConnection) && null != userNickName) {
+                var data = {type:'Key', key:key};
+                dataConnection.send(data);
+            }
+        }
+    }
+
+    function sendChat(str) {
         if (peerDataConnectionIsOpen(dataConnection) && (str.length < 200) && (str.length > 0) && !hideChat) {
             var data = {type:'Chat', text:str};
             dataConnection.send(data);
@@ -975,11 +985,9 @@
         localProtocolHttps = "https:" == localProtocol;
     var nCanvas, ctx, mainCanvas, lbCanvas, chatCanvas, canvasWidth, canvasHeight, qTree = null,
         peer = null,
-        peerId = null,
         connections = {},
         nickNames = {},
         mousePositions = {},
-        chats = {},
         nodeX = 0,
         nodeY = 0,
         nodesOnScreen = [],
@@ -1132,8 +1140,6 @@
     });
 
     var delay = 500,
-        oldX = -1,
-        oldY = -1,
         Canvas = null,
         z = 1,
         scoreText = null,
