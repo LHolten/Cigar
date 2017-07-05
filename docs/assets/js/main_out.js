@@ -334,7 +334,7 @@
         userScore = 0;
         log.info("Connecting to " + peerKey + "..");
 
-        peer = new Peer({key: peerKey});
+        peer = new Peer({key: peerKey, debug: 3});
         peer.on('open', onPeerServerOpen);
         peer.on('close', onPeerServerClose);
 
@@ -1119,7 +1119,7 @@
     var T = {
         ZW: "EU-London"
     };
-    wHandle.connect = peerServerConnect;
+    //wHandle.connect = peerServerConnect;
 
     /*var data = {
         "action": "test"
