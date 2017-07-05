@@ -334,7 +334,7 @@
         userScore = 0;
         log.info("Connecting to " + peerKey + "..");
 
-        peer = new Peer({key: peerKey, debug: 3});
+        peer = new Peer({host: 'https://tranquil-haleakala-65532.herokuapp.com/', debug: 3});
         peer.on('open', onPeerServerOpen);
         peer.on('close', onPeerServerClose);
 
