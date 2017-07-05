@@ -678,7 +678,7 @@
         for (id in connections) {
             var dataConnection = connections[id];
             if (peerDataConnectionIsOpen(dataConnection)) {
-                var data = {type:'MouseMove', position:{x:X, y:Y}};
+                var data = {type: 'MouseMove', position: {x: X, y: Y}};
                 dataConnection.send(data);
             }
         }
@@ -686,7 +686,7 @@
 
     function sendNickName(dataConnection) {
         if (peerDataConnectionIsOpen(dataConnection) && null != userNickName) {
-            var data = {type:'NickName', name:userNickName};
+            var data = {type: 'NickName', name: userNickName};
             dataConnection.send(data);
         }
     }
@@ -695,7 +695,7 @@
         for (id in connections) {
             var dataConnection = connections[id];
             if (peerDataConnectionIsOpen(dataConnection) && null != userNickName) {
-                var data = {type:'Key', key:key};
+                var data = {type: 'Key', key: key};
                 dataConnection.send(data);
             }
         }
@@ -703,7 +703,7 @@
 
     function sendChat(str) {
         if (peerDataConnectionIsOpen(dataConnection) && (str.length < 200) && (str.length > 0) && !hideChat) {
-            var data = {type:'Chat', text:str};
+            var data = {type: 'Chat', text: str};
             dataConnection.send(data);
         }
     }
