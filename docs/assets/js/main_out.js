@@ -1,5 +1,5 @@
 (function(wHandle, wjQuery) {
-    var CONNECTION_KEY = "lwjd5qra8257b9", // Default Connection
+    var CONNECTION_KEY = "dmma5ei0pg8ehfr", // Default Connection
         MASTER = "MASTER",
         SKIN_URL = "./skins/"; // Skin Directory
 
