@@ -359,6 +359,8 @@
                 handleDataConnection(dataConnection);
             }
         });
+
+        nickNames[peer.id] = userNickName;
     }
 
     function onPeerServerClose() {
@@ -690,6 +692,7 @@
     }
 
     function sendChat(str) {
+        addChat(peer.id, str);
         for (id in connections) {
             var dataConnection = connections[id];
             if (peerDataConnectionIsOpen(dataConnection) && (str.length < 200) && (str.length > 0) && !hideChat) {
