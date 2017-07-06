@@ -499,6 +499,7 @@
     }
 
     function addChat(id, str, color) {
+        color = color || {};
         var r = color.r || 0,
             g = color.g || 0,
             b = color.b || 0,
