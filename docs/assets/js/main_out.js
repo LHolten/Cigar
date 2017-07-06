@@ -398,7 +398,7 @@
                 mousePositions[id] = object.position;
                 break;
             case 'Chat':
-                addChat(object.text);
+                addChat(id, object.text);
                 break;
             case 'Peer':
                 var dataConnection = peer.connect(object.id);
@@ -498,44 +498,20 @@
 
     }
 
-    function addChat(view, offset) {
-        function getString() {
-            var text = '',
-                char;
-            while ((char = view.getUint16(offset, true)) != 0) {
-                offset += 2;
-                text += String.fromCharCode(char);
-            }
-            offset += 2;
-            return text;
-        }
-
-        var flags = view.getUint8(offset++);
-
-        if (flags & 0x80) {
-            // SERVER Message
-        }
-
-        if (flags & 0x40) {
-            // ADMIN Message
-        }
-
-        if (flags & 0x20) {
-            // MOD Message
-        }
-
-        var r = view.getUint8(offset++),
-            g = view.getUint8(offset++),
-            b = view.getUint8(offset++),
+    function addChat(id, str, color) {
+        var r = color.r || 0,
+            g = color.g || 0,
+            b = color.b || 0,
             color = (r << 16 | g << 8 | b).toString(16);
         while (color.length < 6) {
             color = '0' + color;
         }
         color = '#' + color;
+
         chatBoard.push({
-            "name": getString(),
+            "name": nickNames[id],
             "color": color,
-            "message": getString(),
+            "message": str,
             "time": Date.now()
         });
         drawChatBoard();
