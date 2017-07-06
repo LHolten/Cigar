@@ -350,6 +350,9 @@
             var dataConnection = peer.connect(id, {metadata:{protocol:1}});
             handleDataConnection(dataConnection);
         });*/
+        if (userNickName) {
+            nickNames[peer.id] = userNickName;
+        }
 
         log.info("Connection successful!");
 
@@ -359,8 +362,6 @@
                 handleDataConnection(dataConnection);
             }
         });
-
-        nickNames[peer.id] = userNickName;
     }
 
     function onPeerServerClose() {
@@ -678,6 +679,16 @@
         if (peerDataConnectionIsOpen(dataConnection) && null != userNickName) {
             var data = {type: 'NickName', name: userNickName};
             dataConnection.send(data);
+        }
+    }
+
+    function sendNickNameAll() {
+        for (id in connections) {
+            var dataConnection = connections[id];
+            if (peerDataConnectionIsOpen(dataConnection) && null != userNickName) {
+                var data = {type: 'NickName', name: userNickName};
+                dataConnection.send(data);
+            }
         }
     }
 
@@ -1037,10 +1048,13 @@
         var playerStat = null;
         wHandle.isSpectating = false;
         wHandle.setNick = function(arg) {
-        hideOverlays();
-        userNickName = arg;
-        sendNickName();
-        userScore = 0
+            hideOverlays();
+            userNickName = arg;
+            sendNickNameAll();
+            if (peer.id) {
+                nickNames[peer.id] = userNickName;
+            }
+            userScore = 0
     };
     wHandle.setSkins = function(arg) {
         showSkin = arg
