@@ -337,6 +337,7 @@
         peer = new Peer({key: peerKey});
         peer.on('open', onPeerServerOpen);
         peer.on('close', onPeerServerClose);
+        peer.on('error', onPeerServerError);
 
         peer.on('connection', onPeerConnection);
     }
@@ -357,6 +358,10 @@
     function onPeerServerClose() {
         setTimeout(showConnecting, delay);
         delay *= 1.5;
+    }
+
+    function onPeerServerError(error) {
+        log.warn(error);
     }
 
     function onPeerOpen(dataConnection) {
