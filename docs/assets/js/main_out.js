@@ -713,9 +713,12 @@
     }
 
     function sendChat(str) {
-        if (peerDataConnectionIsOpen(dataConnection) && (str.length < 200) && (str.length > 0) && !hideChat) {
-            var data = {type: 'Chat', text: str};
-            dataConnection.send(data);
+        for (id in connections) {
+            var dataConnection = connections[id];
+            if (peerDataConnectionIsOpen(dataConnection) && (str.length < 200) && (str.length > 0) && !hideChat) {
+                var data = {type: 'Chat', text: str};
+                dataConnection.send(data);
+            }
         }
     }
 
