@@ -1,6 +1,5 @@
 (function(wHandle, wjQuery) {
     var CONNECTION_KEY = "1c119ba9-59f6-44aa-a209-3e46b86b02c6", // Default Connection
-        MASTER = "MASTER",
         SKIN_URL = "./skins/"; // Skin Directory
 
     wHandle.setserver = function(arg) {
@@ -346,13 +345,20 @@
         delay = 500;
         wjQuery("#connecting").hide();
 
-        var masterConnection = peer.connect(MASTER, {metadata:'needPeer'});
+        /*var masterConnection = peer.connect(MASTER, {metadata:'needPeer'});
         masterConnection.on('data', function(id) {
             var dataConnection = peer.connect(id, {metadata:{protocol:1}});
             handleDataConnection(dataConnection);
-        });
+        });*/
 
         log.info("Connection successful!");
+
+        peer.listAllPeers(function(list) {
+            for(var cnt = 0; cnt < list.length; cnt++) {
+                var dataConnection = peer.connect(list[cnt], {metadata:{protocol:1}});
+                handleDataConnection(dataConnection);
+            }
+        });
     }
 
     function onPeerServerClose() {
