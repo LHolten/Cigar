@@ -76,7 +76,11 @@
                         document.getElementById("chat_textbox").blur();
                         chattxt = document.getElementById("chat_textbox").value;
                         if (chattxt.length > 0) sendChatAll(chattxt);
+<<<<<<< HEAD
                         addChat(peer.id, chattxt);
+=======
+                        addChat(peer.id, str);
+>>>>>>> aacf1aff8ea89a2bb9624ed93bab1488b3437fb8
                         document.getElementById("chat_textbox").value = "";
                     } else {
                         if (!hasOverlay) {
