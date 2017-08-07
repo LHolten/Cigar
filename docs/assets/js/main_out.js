@@ -3,8 +3,8 @@
         SKIN_URL = "./skins/"; // Skin Directory
 
     wHandle.setserver = function(arg) {
-        if (arg != CONNECTION_URL) {
-            //CONNECTION_URL = arg;
+        if (arg != CONNECTION_KEY) {
+            CONNECTION_KEY = arg;
             showConnecting();
         }
     };
@@ -75,7 +75,8 @@
                         isTyping = false;
                         document.getElementById("chat_textbox").blur();
                         chattxt = document.getElementById("chat_textbox").value;
-                        if (chattxt.length > 0) sendChat(chattxt);
+                        if (chattxt.length > 0) sendChatAll(chattxt);
+                        addChat(peer.id, str);
                         document.getElementById("chat_textbox").value = "";
                     } else {
                         if (!hasOverlay) {
@@ -403,10 +404,10 @@
             case 'Chat':
                 addChat(id, object.text);
                 break;
-            case 'Peer':
+            /*case 'Peer':
                 var dataConnection = peer.connect(object.id);
                 handleDataConnection(dataConnection);
-                break;
+                break;*/
         }
 
 
@@ -702,8 +703,7 @@
         }
     }
 
-    function sendChat(str) {
-        addChat(peer.id, str);
+    function sendChatAll(str) {
         for (id in connections) {
             var dataConnection = connections[id];
             if (peerDataConnectionIsOpen(dataConnection) && (str.length < 200) && (str.length > 0) && !hideChat) {
